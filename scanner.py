@@ -1,10 +1,13 @@
-# Scan common ports on a target
+# Basic Port Scanner
+# Version 1.1
 # Educational use only
 
 import os
 import socket
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+VERSION = "1.1"
 
 COMMON_PORTS = {
     20: "FTP Data",
@@ -70,23 +73,28 @@ def scan_ports(target_ip):
                 print(f"Port {port} open ({service})")
                 open_ports.append((port, service))
 
+    open_ports.sort()
     return open_ports
 
 
-def save_results(target, target_ip, open_ports):
+def save_results(target, target_ip, open_ports, duration):
     folder = "Scans"
 
     if not os.path.exists(folder):
         os.makedirs(folder)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f"{folder}/scan_{timestamp}.txt"
+    safe_target = target.replace(".", "_")
+    filename = f"{folder}/{safe_target}_{timestamp}.txt"
 
     with open(filename, "w") as file:
         file.write("=" * 50 + "\n")
+        file.write(f"Basic Port Scanner v{VERSION}\n")
         file.write(f"Target (input): {target}\n")
         file.write(f"Resolved IP: {target_ip}\n")
         file.write(f"Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        file.write(f"Scan duration: {duration}\n")
+        file.write(f"Open ports count: {len(open_ports)}\n")
         file.write("=" * 50 + "\n")
 
         if open_ports:
@@ -100,6 +108,8 @@ def save_results(target, target_ip, open_ports):
 
 
 def main():
+    print(f"Basic Port Scanner v{VERSION}")
+
     while True:
         while True:
             target = input("Enter IP or domain (or type 'exit' to quit): ").strip()
@@ -119,12 +129,17 @@ def main():
             except socket.gaierror:
                 print("Invalid IP or domain. Please try again.\n")
 
+        scan_start = datetime.now()
+
         print("-" * 50)
         print(f"Scanning target: {target_ip}")
-        print(f"Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Start: {scan_start.strftime('%Y-%m-%d %H:%M:%S')}")
         print("-" * 50)
 
         open_ports = scan_ports(target_ip)
+
+        scan_end = datetime.now()
+        duration = scan_end - scan_start
 
         print("-" * 50)
         if open_ports:
@@ -134,7 +149,10 @@ def main():
         else:
             print("No open ports were found on the common list.")
 
-        save_results(target, target_ip, open_ports)
+        print(f"Open ports count: {len(open_ports)}")
+        print(f"Scan duration: {duration}")
+
+        save_results(target, target_ip, open_ports, duration)
 
         print("Scan complete.")
 
