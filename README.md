@@ -1,61 +1,58 @@
-[README.md](https://github.com/user-attachments/files/27210767/README.md)
 # Basic Port Scanner
 
-A simple Python TCP port scanner that checks common ports on a target IP address or domain.
+An educational Python TCP-connect scanner that checks a **fixed list of common TCP ports** on a hostname or IPv4 address. It resolves the target, runs concurrent connection attempts, and saves timestamped results.
 
 ## Features
 
-- Scan common TCP ports
-- Multi-threaded scanning for faster results
-- Resolves domains to IP addresses
-- Saves results to timestamped files
-- Input validation (handles invalid or empty input)
-- Repeat scans without restarting the program
+- Checks selected TCP ports with `socket.connect_ex`
+- Resolves hostnames using `socket.gethostbyname`
+- Uses `ThreadPoolExecutor` to scan multiple ports concurrently
+- Validates empty or unresolvable targets
+- Saves results to local `Scans/` files and allows another scan in the same session
 
-## Technologies Used
+## Requirements
 
-- Python
-- Socket library
-- concurrent.futures (ThreadPoolExecutor)
+Python 3. No third-party packages required.
 
-## How to Use
+## Usage
 
-Run the program:
-
+```bash
 python scanner.py
+```
 
-Then enter a target when prompted:
+Enter an **IP or domain you own or are expressly authorized to test**. Type `exit` to quit. The output reports each TCP port where a connection was successful and writes the list to a timestamped report in `Scans/`.
 
-Enter IP or domain: google.com
+## How it works
 
-## Example Output
+The script resolves a hostname to one IPv4 address, checks ports defined in `COMMON_PORTS`, applies a one-second timeout per connection, and reports ports where `connect_ex` returns success. Descriptions such as `HTTP` are **common port labels, not verified service detection**.
 
+## Known limitations
+
+- Checks only the fixed list of TCP ports; **does not scan UDP or all 65,535 TCP ports**
+- Supports IPv4 addresses and IPv4 DNS resolution, not IPv6
+- A filtered, blocked, timed-out, or unreachable service can appear the same as a closed port
+- Does not identify service versions, vulnerabilities, or the security of the host
+- No automated test suite yet; the sample below is an illustration, **not evidence of a live scan**
+
+## Illustrative output format
+
+```text
+Basic Port Scanner v1.1
+Enter IP or domain (or type 'exit' to quit): <authorized-host>
+Scanning target: <resolved-ip>
 Port 80 open (HTTP)
-Port 443 open (HTTPS)
+Open ports count: 1
+Results saved to Scans/<target>_<timestamp>.txt
+```
 
-## Project Structure
+The lines above only demonstrate the expected format; actual results depend on the target and network.
 
-port-scanner/
-│
-├── scanner.py
-├── README.md
-├── Scans/
-│   └── scan_YYYY-MM-DD_HH-MM-SS.txt
+## Next steps
 
-## Limitations
+- Allow custom port selection
+- Add tests with a locally controlled TCP listener
+- Offer structured CSV/JSON output
 
-- Only scans common ports (not full range)
-- No service version detection
-- No vulnerability scanning
+## Responsible use
 
-## Future Improvements
-
-- Custom port range input
-- Export results to CSV
-- Add GUI interface
-- Improve scan speed further
-
-## Disclaimer
-
-This project is for educational purposes only.
-Only scan systems you own or have permission to test.
+Only test systems that you own or have explicit authorization to scan. Do not assume an open port means a vulnerability.
